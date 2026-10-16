@@ -1,0 +1,57 @@
+name: Bug report / 问题报告
+description: 报告连接、文字、人物配对或界面问题
+title: '[Bug] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请勿上传游戏 EXE/DLL、存档或游玩对白。截图和日志请先删除个人路径与私人内容。
+  - type: input
+    id: app_version
+    attributes:
+      label: 工具版本
+      placeholder: 0.2.0
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows 版本与体系结构
+      placeholder: Windows 11 x64
+    validations:
+      required: true
+  - type: input
+    id: game_sha256
+    attributes:
+      label: 游戏版本与主程序 SHA-256
+      description: 可用 PowerShell 的 Get-FileHash -Algorithm SHA256 检查，不需上传主程序。
+    validations:
+      required: true
+  - type: dropdown
+    id: run_type
+    attributes:
+      label: 运行方式
+      options:
+        - 免安装 EXE
+        - Python 源码
+        - 原创演示模式
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 注明窗口类型、操作顺序和问题出现频率。
+    validations:
+      required: true
+  - type: textarea
+    id: expected_actual
+    attributes:
+      label: 预期与实际表现
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: 补充信息或已脱敏截图
+      description: 可填写界面状态、报错文字和安全软件提示。

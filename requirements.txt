@@ -1,0 +1,4 @@
+# Python 3.12 x64; exact runtime dependencies.
+frida==17.23.3
+PySide6-Essentials==6.12.0
+shiboken6==6.12.0

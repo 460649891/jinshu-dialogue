@@ -1,0 +1,61 @@
+name: Windows tests and portable build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      PYTHONUTF8: '1'
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-build.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked dependencies
+        run: python -m pip install -r requirements-build.txt
+      - name: Documentation links
+        run: python scripts/check_docs.py
+      - name: Python offline tests
+        run: python -m unittest discover -s tests -v
+      - name: JavaScript offline tests
+        run: node tests/test_agent.js
+      - name: GUI demo smoke test
+        run: python src/gui.py --demo --smoke-test
+      - name: Build portable archives
+        shell: pwsh
+        run: ./scripts/build.ps1 -Python (Get-Command python).Source
+      - name: Packaged GUI demo smoke test
+        shell: pwsh
+        run: |
+          Expand-Archive -LiteralPath ./release/JinshuDialogue-0.2.0-windows-x64.zip -DestinationPath ./.qa/portable
+          $env:PYTHONHOME = ''
+          $env:PYTHONPATH = ''
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          $process = Start-Process -FilePath ./.qa/portable/JinshuDialogue-0.2.0-windows-x64/JinshuDialogue.exe -ArgumentList '--demo', '--smoke-test' -WindowStyle Hidden -PassThru
+          if (-not $process.WaitForExit(30000)) { $process.Kill(); throw 'Packaged GUI smoke test timed out.' }
+          if ($process.ExitCode -ne 0) { throw "Packaged GUI exited with $($process.ExitCode)." }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: JinshuDialogue-0.2.0-windows-x64
+          path: |
+            release/*.zip
+            release/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14

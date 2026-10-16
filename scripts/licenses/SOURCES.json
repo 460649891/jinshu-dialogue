@@ -1,0 +1,453 @@
+{
+  "retrieved": "2026-10-16",
+  "files": [
+    {
+      "path": "Qt-6.12.0/Apache-2.0.txt",
+      "component": "Qt / PySide6 / shiboken6",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/Apache-2.0.txt?h=v6.12.0",
+      "sha256": "e3ba223bb1423f0aad8c3dfce0fe3148db48926d41e6fbc3afbbf5ff9e1c89cb"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/LICENSES/BSD-2-Clause.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/BSD-2-Clause.txt?h=v6.12.0",
+      "sha256": "8fda146749ca071ac9cdce2e24d25444676ea48d1f9dccc2b7c15c054b717db8"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/LICENSES/CC0-1.0.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/CC0-1.0.txt?h=v6.12.0",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/blake2/COPYING.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/blake2/COPYING?h=v6.12.0",
+      "sha256": "4103f471877ed0bae500752c5fcd7ecca409d4a4a8dc2ad40437daba60f1a2bc"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/blake2/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/blake2/qt_attribution.json?h=v6.12.0",
+      "sha256": "bab552307bdd03ed9a4cf7f8f1397c3d18d4dbee19ee576033284104785245be"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/D3D12MemoryAllocator/LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/D3D12MemoryAllocator/LICENSE.txt?h=v6.12.0",
+      "sha256": "5478a2f36b736e13dd3250b9c71a4ab521bc327fb9d112a92c647bf3e69ddb68"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/D3D12MemoryAllocator/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/D3D12MemoryAllocator/qt_attribution.json?h=v6.12.0",
+      "sha256": "ad36f74f9d5bb4c2a5d7bce97507711452a2089c1f4f673473bf75d17851f381"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/double-conversion/LICENSE.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/double-conversion/LICENSE?h=v6.12.0",
+      "sha256": "4af93c12062c58058378de2397dc1c92bbff9ddfb1d583a01c84127557ce97ca"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/double-conversion/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/double-conversion/qt_attribution.json?h=v6.12.0",
+      "sha256": "4d9c7505a7c12e4e6b57bbee63af926c861abb5515cdf802b8f3491e321146fe"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/easing/LICENSE.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/easing/LICENSE?h=v6.12.0",
+      "sha256": "92fac99458f1754b73edf50f9c9983e0efaa06ad96e2afd5e538c79f45b4b191"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/easing/qt_attribution.json",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/easing/qt_attribution.json?h=v6.12.0",
+      "sha256": "77d67a1db5882bb0b9a1278b014885bee45a4c059d1da9f835b6da5bc4b9c93d"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/emoji-segmenter/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/emoji-segmenter/qt_attribution.json?h=v6.12.0",
+      "sha256": "9a980fc0f9e478d2a7e9a571d4cd234c259aaf8e2ea3fb60a0a7cf02cc3c3700"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/forkfd/LICENSE.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/forkfd/LICENSE?h=v6.12.0",
+      "sha256": "d0d683ae18e78fbef90eb41168fb781920da2d12bf80704490f0882915c18ae0"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/forkfd/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/forkfd/qt_attribution.json?h=v6.12.0",
+      "sha256": "525fd890017a3966f542da42a9ff0ca2a0d71bc45f80a4871de3e0bd0f612612"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/freetype/BDF-LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/freetype/BDF-LICENSE.txt?h=v6.12.0",
+      "sha256": "e4e792f29e66750f2e410fd7b50a567652c180f6ee15e1a4dfa0bb5cde524537"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/freetype/LICENSE.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/freetype/LICENSE.txt?h=v6.12.0",
+      "sha256": "bf543cdda11864477b8d2ca2aa9afc2aaa8f9133461b4d962ed6ec73646256a1"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/freetype/PCF-LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/freetype/PCF-LICENSE.txt?h=v6.12.0",
+      "sha256": "6938597bfdeca0db191a8f9ede52eaf2482c2c71a0094c084747a1235f9958fe"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/freetype/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/freetype/qt_attribution.json?h=v6.12.0",
+      "sha256": "628b68bf60eb3bc1616342bc3545b63be2392e78bbebbc4c19f49675dd2ac8a7"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/freetype/ZLIB-LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/freetype/ZLIB-LICENSE.txt?h=v6.12.0",
+      "sha256": "2b1f5d615382a151af3eb71462ad17d89e2efee8fa7664058d35d3d9237ebb19"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/harfbuzz-ng/COPYING.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/harfbuzz-ng/COPYING?h=v6.12.0",
+      "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/harfbuzz-ng/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/harfbuzz-ng/qt_attribution.json?h=v6.12.0",
+      "sha256": "b869a7f186e4cfc00cc979e7c4ffd369d823f7a0a94b951a6aedb9b3278c8419"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/icc/LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/icc/LICENSE.txt?h=v6.12.0",
+      "sha256": "9e34ff47b3a44814e183342e7e198d127a6740e29d20e8381fba7688dafc79dd"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/icc/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/icc/qt_attribution.json?h=v6.12.0",
+      "sha256": "509da9bd2b3f769c730aa4627b1080d65f39b0ecd4130111c9e1122e13cd35b5"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/libjpeg/COPYRIGHT.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/libjpeg/COPYRIGHT.txt?h=v6.12.0",
+      "sha256": "e5b349c6a98d997a8d0f5fcfe5cc900b1f76bbc32743674c52a70981498748c0"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/libjpeg/ijg-license.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/libjpeg/ijg-license.txt?h=v6.12.0",
+      "sha256": "1cb448f5e2e6d3aca60943f4eee1a04675628dc0266a074a42bc1560ebc28d61"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/libjpeg/LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/libjpeg/LICENSE?h=v6.12.0",
+      "sha256": "ba6bceebcba0fdd35488477c2cca8c4632ce82c74dbfbc87d886ce6fc4433579"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/libjpeg/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/libjpeg/qt_attribution.json?h=v6.12.0",
+      "sha256": "ed7cb7abdd9124f664acd26cf552ba821c8cf236c4cd34a6737f202215bd41bc"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/libpng/LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/libpng/LICENSE?h=v6.12.0",
+      "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/libpng/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/libpng/qt_attribution.json?h=v6.12.0",
+      "sha256": "a43ff8e146c949f7cd14e00bd681f4957e27def06ecafec55ccc7231c451d3fa"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/md4/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/md4/qt_attribution.json?h=v6.12.0",
+      "sha256": "34bda63a2fcc23c83f2e5364ccd394553b4baa505b1f79ded9cc2161c56a9b4c"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/md4c/LICENSE.md",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/md4c/LICENSE.md?h=v6.12.0",
+      "sha256": "d30937367d5413e7eaa218b1640b8946ff76fd34d97152f6979fd96169d5d0fc"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/md4c/qt_attribution.json",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/md4c/qt_attribution.json?h=v6.12.0",
+      "sha256": "7b2bc7be22e4be2a2984119ce3d0bfc210ddd0d8ef6193d66e8479d4c22af4ba"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/md5/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/md5/qt_attribution.json?h=v6.12.0",
+      "sha256": "20b0f1b17ccd1bd5e8d763b1cdca4b095b8f0c037644b5ee18154536b7d8425e"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/pcre2/LICENCE.md",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/pcre2/LICENCE.md?h=v6.12.0",
+      "sha256": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/pcre2/LICENSE-SLJIT.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/pcre2/LICENSE-SLJIT?h=v6.12.0",
+      "sha256": "5f216505c0f6ea3273caec89e766eef93cdeb7bbb0c429f9360116d7c938feeb"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/pcre2/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/pcre2/qt_attribution.json?h=v6.12.0",
+      "sha256": "c65e311b057e3ecb8ee9aeddd681add5aa4484485e265d3a6a8e7967abc19948"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/pixman/LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/pixman/LICENSE?h=v6.12.0",
+      "sha256": "942c4f2a80394d3f53599b8382e9f27349b95c45d92b69b84f26d404f4dd74a5"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/pixman/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/pixman/qt_attribution.json?h=v6.12.0",
+      "sha256": "f1dc159b63bf84a4c9c367e8ff79aa748b63f5fc622d5080c0a7ddd98ddc7ac7"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/rfc6234/LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/rfc6234/LICENSE?h=v6.12.0",
+      "sha256": "7ccebd514aaabc86192f957d773cebf06577c12fe9f25ecd419c6cac5da7a14c"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/rfc6234/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/rfc6234/qt_attribution.json?h=v6.12.0",
+      "sha256": "fa24413bdc5015fc7fc84297fa17d4c8a598f8f7c76b9495a6e6b26a77b4a324"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/sha1/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/sha1/qt_attribution.json?h=v6.12.0",
+      "sha256": "53cab2c771f7f7ffbf6a58ff759e5846b746e91d98dfe467d5145edf8cd7d306"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/sha3/BRG_ENDIAN_LICENSE.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/sha3/BRG_ENDIAN_LICENSE?h=v6.12.0",
+      "sha256": "2fed6f252ca4a7e813811de3cd3cd08183edd4138bdee909410ef6eee394e82c"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/sha3/CC0_LICENSE.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/sha3/CC0_LICENSE?h=v6.12.0",
+      "sha256": "1f2786e2c5befeb4dcba6638db6528bf96ef5d2cf24bc85ab5a81ef00abef59d"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/sha3/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/sha3/qt_attribution.json?h=v6.12.0",
+      "sha256": "d904a6c21c150d9cac693c0806a469480306cb4e5879cc13c994fbadba71a56e"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/siphash/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/siphash/qt_attribution.json?h=v6.12.0",
+      "sha256": "8614947dfc0ca1d21aad2f88b4400598262ab8c08aa87c4f7acc0c2de6e5619e"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/tinycbor/LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/tinycbor/LICENSE?h=v6.12.0",
+      "sha256": "3c6ba0b5bfa7830505301ffb336a17b0748e0d61c4d34216e9dc98f10e40395e"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/tinycbor/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/tinycbor/qt_attribution.json?h=v6.12.0",
+      "sha256": "788408509fb7967042640f24ba78b263712e816d886303ba1733f49753d33863"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/VulkanMemoryAllocator/LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/VulkanMemoryAllocator/LICENSE.txt?h=v6.12.0",
+      "sha256": "846d97c8b74ccaa92b9ad031140a04363b3b3985f318094552f297b8bda1c68e"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/VulkanMemoryAllocator/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/VulkanMemoryAllocator/qt_attribution.json?h=v6.12.0",
+      "sha256": "bdadb296dc4d3aadea5f9eb68f8f4abab2e6a9e135fec084d2914c030af5bab2"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/wintab/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/wintab/qt_attribution.json?h=v6.12.0",
+      "sha256": "b879ea91b719531d45e1cfe33d2241d060a9260200bd91a09ada074b16063f9c"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/zlib/LICENSE.txt",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/zlib/LICENSE?h=v6.12.0",
+      "sha256": "d7e3139972874dc8abdbbfce27ec1e6f942b28279dd7d27453630a8b4610e080"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/3rdparty/zlib/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/3rdparty/zlib/qt_attribution.json?h=v6.12.0",
+      "sha256": "0346805e9c4048316dbc7c58d560a20c12482ea0218de264282212e9619b6d64"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/corelib/global/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/corelib/global/qt_attribution.json?h=v6.12.0",
+      "sha256": "64698063a65a1502b986bd61163b5eb9c6bde87f93feb28e4eab43ff07a4f10a"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/corelib/text/qt_attribution.json",
+      "component": "Qt / PySide6 third-party licenses and attributions",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/corelib/text/qt_attribution.json?h=v6.12.0",
+      "sha256": "4e23736600be956e4214849ad8baaa955441656db7324713fab6353c1163b4f5"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/gui/painting/LICENSE.QIMAGETRANSFORM.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/gui/painting/LICENSE.QIMAGETRANSFORM.txt?h=v6.12.0",
+      "sha256": "46b3cbfa2f2946b93291506351e9be1dd0a28d2a53260f5aa488abd36fbeca9d"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/gui/painting/LICENSE.XCONSORTIUM.txt",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/gui/painting/LICENSE.XCONSORTIUM.txt?h=v6.12.0",
+      "sha256": "a216b01291eb38fc1af93cfccf1fc67b48d9923612e517c2a695e95b3f03c22c"
+    },
+    {
+      "path": "Qt-6.12.0/attributions/src/gui/painting/qt_attribution.json",
+      "component": "Qt third-party attribution",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/src/gui/painting/qt_attribution.json?h=v6.12.0",
+      "sha256": "8cddd6c73a885f697261c4d6d60e5cd814a2544fcd407504b52a5eb9b7cc3600"
+    },
+    {
+      "path": "Qt-6.12.0/BSD-3-Clause.txt",
+      "component": "Qt / PySide6 / shiboken6",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/BSD-3-Clause.txt?h=v6.12.0",
+      "sha256": "9f0490f18656c6f2435bd14f603ef0c96434d1825615363dce43abb42ed1dcce"
+    },
+    {
+      "path": "Qt-6.12.0/GPL-3.0-only.txt",
+      "component": "Qt / PySide6 / shiboken6",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/GPL-3.0-only.txt?h=v6.12.0",
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    {
+      "path": "Qt-6.12.0/LGPL-3.0-only.txt",
+      "component": "Qt / PySide6 / shiboken6",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/LGPL-3.0-only.txt?h=v6.12.0",
+      "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
+    },
+    {
+      "path": "Qt-6.12.0/LicenseRef-Qt-Commercial.txt",
+      "component": "Qt / PySide6 / shiboken6",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/LicenseRef-Qt-Commercial.txt?h=v6.12.0",
+      "sha256": "9b1f50aae6267f9d5e0ceb6775ee86450262c25ec7c0573e151fe5d3f18a4700"
+    },
+    {
+      "path": "Qt-6.12.0/MIT.txt",
+      "component": "Qt / PySide6 / shiboken6",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/MIT.txt?h=v6.12.0",
+      "sha256": "d040359701c01996a017d5c515678929cd1b0625e64cb86db44025fbb6cdf1fc"
+    },
+    {
+      "path": "Qt-6.12.0/Unicode-3.0.txt",
+      "component": "Qt / PySide6 / shiboken6",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/Unicode-3.0.txt?h=v6.12.0",
+      "sha256": "80bb6294022d8764adb36a9d65ebb6bd94efb1865918a71e31e6c247607d7634"
+    },
+    {
+      "path": "Qt-6.12.0/Zlib.txt",
+      "component": "Qt / PySide6 / shiboken6",
+      "version": "6.12.0",
+      "url": "https://code.qt.io/cgit/qt/qtbase.git/plain/LICENSES/Zlib.txt?h=v6.12.0",
+      "sha256": "d7e3139972874dc8abdbbfce27ec1e6f942b28279dd7d27453630a8b4610e080"
+    }
+  ]
+}
