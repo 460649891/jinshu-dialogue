@@ -7,7 +7,7 @@ import sys
 import threading
 
 from PySide6.QtCore import QByteArray, QEvent, QLockFile, QModelIndex, QThread, QTimer, QUrl, Qt, Signal
-from PySide6.QtGui import QDesktopServices, QFont, QIcon, QKeySequence, QTextBlockFormat, QTextCursor, QTextOption
+from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QKeySequence, QShortcut, QTextBlockFormat, QTextCursor, QTextOption
 from PySide6.QtWidgets import (
     QAbstractItemView, QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout,
     QLabel, QLineEdit, QListView, QMainWindow, QMessageBox, QPushButton,
@@ -26,10 +26,11 @@ class CaptureThread(QThread):
     dialogue = Signal(dict)
     status = Signal(str, str, dict)
 
-    def __init__(self, executable, output_directory, parent=None):
+    def __init__(self, executable, output_directory, parent=None, launch_game=False):
         super().__init__(parent)
         self.executable = executable
         self.output_directory = output_directory
+        self.launch_game = launch_game
         self.stop_event = threading.Event()
 
     def run(self):
@@ -38,7 +39,7 @@ class CaptureThread(QThread):
                 from .capture import CaptureService
             else:
                 from capture import CaptureService
-            CaptureService(self.executable, self.output_directory).run(
+            CaptureService(self.executable, self.output_directory, launch_game=self.launch_game).run(
                 self.stop_event, self.status.emit, self.dialogue.emit)
         except PermissionError:
             self.status.emit('error', '访问被拒绝。请将游戏与对话录以相同权限运行，再重试。', {})
@@ -46,16 +47,47 @@ class CaptureThread(QThread):
             self.status.emit('error', str(error) or '连接失败，请检查游戏路径后重试。', {})
 
 
+class LaunchThread(QThread):
+    launched = Signal(dict)
+    failed = Signal(str)
+
+    def __init__(self, executable, parent=None):
+        super().__init__(parent)
+        self.executable = executable
+
+    def run(self):
+        try:
+            if __package__:
+                from .game import launch_game
+            else:
+                from game import launch_game
+            self.launched.emit(launch_game(self.executable))
+        except PermissionError:
+            self.failed.emit('访问被拒绝。请将游戏与对话录以相同权限运行，再重试。')
+        except Exception as error:
+            self.failed.emit(str(error) or '无法启动游戏，请检查所选程序后重试。')
+
+
 class MainWindow(QMainWindow):
     def __init__(self, settings_path=None, demo=False):
         super().__init__()
         self.demo = demo
         self.worker = None
+        self.launch_worker = None
+        self._capture_launching = False
+        self._capture_status_code = 'stopped'
         self.unread_count = 0
         self._following = True
         self._updating = False
         self._closing = False
         self._pending = []
+        self._search_query = ''
+        self._search_matches = []
+        self._search_position = -1
+        self._search_record = None
+        self._search_total = 0
+        self._search_base = 0
+        self._detail_record = None
         self._last_status = 'stopped'
         base = Path(settings_path).parent if settings_path else writable_app_directory()
         self.settings_path = Path(settings_path) if settings_path else base / 'settings.json'
@@ -71,6 +103,10 @@ class MainWindow(QMainWindow):
         if icon.exists():
             self.setWindowIcon(QIcon(str(icon)))
         self.model = DialogueListModel(self)
+        self.search_timer = QTimer(self)
+        self.search_timer.setSingleShot(True)
+        self.search_timer.setInterval(150)
+        self.search_timer.timeout.connect(self._refresh_search)
         self._build_ui()
         theme = RESOURCE_ROOT / 'src' / 'theme.qss'
         if theme.exists():
@@ -89,9 +125,9 @@ class MainWindow(QMainWindow):
             self.append_dialogues(self._demo_records())
             self.list_view.setCurrentIndex(self.model.index(1))
             QTimer.singleShot(0, lambda: self.list_view.scrollToTop())
-            self.start_button.setEnabled(False)
+            self._update_capture_controls()
         else:
-            message = '选择游戏中的 jshyl5.exe，点击“开始记录”。游戏运行后会自动连接。'
+            message = '选择游戏中的 jshyl5.exe，点击“启动游戏并开始记录”。游戏已运行时也可直接开始记录。'
             if self._using_fallback_directory:
                 message += f'\n应用目录不可写，记录保存于 {self.output_directory}'
             self._set_status('stopped', message)
@@ -147,19 +183,69 @@ class MainWindow(QMainWindow):
         self.browse_button = QPushButton('选择程序…')
         self.browse_button.clicked.connect(self.choose_executable)
         self.start_button = QPushButton('开始记录')
-        self.start_button.setObjectName('primaryButton')
         self.start_button.setMinimumWidth(108)
         self.start_button.clicked.connect(self._toggle_capture)
         path_row.addWidget(self.path_edit, 1)
         path_row.addWidget(self.browse_button)
-        path_row.addWidget(self.start_button)
         connection_layout.addLayout(path_row)
+        launch_row = QHBoxLayout()
+        launch_row.setSpacing(10)
+        self.launch_capture_button = QPushButton('启动游戏并开始记录')
+        self.launch_capture_button.setObjectName('primaryButton')
+        self.launch_capture_button.clicked.connect(lambda: self.start_capture(launch_game=True))
+        self.launch_button = QPushButton('启动游戏')
+        self.launch_button.clicked.connect(self.launch_game)
+        launch_row.addWidget(self.launch_capture_button)
+        launch_row.addWidget(self.launch_button)
+        launch_row.addWidget(self.start_button)
+        launch_row.addStretch()
+        connection_layout.addLayout(launch_row)
         self.status_message = QLabel()
         self.status_message.setObjectName('statusMessage')
         self.status_message.setWordWrap(True)
         self.status_message.setTextFormat(Qt.PlainText)
         connection_layout.addWidget(self.status_message)
         layout.addWidget(connection)
+
+        search_layout = QVBoxLayout()
+        search_layout.setSpacing(5)
+        search_row = QHBoxLayout()
+        search_row.setSpacing(8)
+        search_label = QLabel('查找对白')
+        search_label.setObjectName('fieldLabel')
+        self.search_edit = QLineEdit()
+        self.search_edit.setPlaceholderText('人物或正文 · Ctrl+F')
+        self.search_edit.setAccessibleName('搜索人物或对白')
+        search_label.setBuddy(self.search_edit)
+        self.search_edit.setClearButtonEnabled(True)
+        self.search_edit.textChanged.connect(self._search_changed)
+        self.search_edit.installEventFilter(self)
+        self.search_previous_button = QPushButton('上一条')
+        self.search_previous_button.setToolTip('Shift+Enter / Shift+F3')
+        self.search_previous_button.clicked.connect(lambda: self._navigate_search(-1))
+        self.search_next_button = QPushButton('下一条')
+        self.search_next_button.setToolTip('Enter / F3')
+        self.search_next_button.clicked.connect(lambda: self._navigate_search(1))
+        self.search_previous_button.setEnabled(False)
+        self.search_next_button.setEnabled(False)
+        self.search_count = QLabel('输入关键词')
+        self.search_count.setObjectName('muted')
+        self.search_count.setMinimumWidth(86)
+        search_row.addWidget(search_label)
+        search_row.addWidget(self.search_edit, 1)
+        search_row.addWidget(self.search_previous_button)
+        search_row.addWidget(self.search_next_button)
+        search_row.addWidget(self.search_count)
+        search_layout.addLayout(search_row)
+        self.search_scope = QLabel('搜索范围：当前界面最近 2000 条；定位原列表，保留上下文。Esc 清除')
+        self.search_scope.setObjectName('muted')
+        self.search_scope.setWordWrap(True)
+        search_layout.addWidget(self.search_scope)
+        layout.addLayout(search_layout)
+        for sequence, callback in [('Ctrl+F', self._focus_search), ('F3', lambda: self._navigate_search(1)),
+                                   ('Shift+F3', lambda: self._navigate_search(-1)), ('Esc', self.search_edit.clear)]:
+            shortcut = QShortcut(QKeySequence(sequence), self)
+            shortcut.activated.connect(callback)
 
         self.splitter = QSplitter(Qt.Horizontal)
         self.splitter.setChildrenCollapsible(False)
@@ -219,9 +305,12 @@ class MainWindow(QMainWindow):
         detail_panel = QFrame()
         detail_panel.setObjectName('readerPanel')
         detail_layout = QVBoxLayout(detail_panel)
+        self.detail_layout = detail_layout
         detail_layout.setContentsMargins(22, 15, 22, 18)
         detail_layout.setSpacing(10)
-        detail_header = QHBoxLayout()
+        self.detail_header = QWidget()
+        detail_header = QHBoxLayout(self.detail_header)
+        detail_header.setContentsMargins(0, 0, 0, 0)
         detail_title = QLabel('完整正文')
         detail_title.setObjectName('panelTitle')
         detail_header.addWidget(detail_title)
@@ -229,7 +318,7 @@ class MainWindow(QMainWindow):
         detail_hint = QLabel('选中文字可直接复制')
         detail_hint.setObjectName('muted')
         detail_header.addWidget(detail_hint)
-        detail_layout.addLayout(detail_header)
+        detail_layout.addWidget(self.detail_header)
         self.detail_speaker = QLabel('从左侧选择一条对白')
         self.detail_speaker.setObjectName('detailSpeaker')
         self.detail_speaker.setTextFormat(Qt.PlainText)
@@ -245,6 +334,7 @@ class MainWindow(QMainWindow):
         self.detail.setAcceptRichText(False)
         self.detail.setPlaceholderText('完整对白将在这里展开。\n\n可以选中任意文字，按 Ctrl+C 复制。')
         self.detail.setAccessibleName('可选择复制的完整对白正文')
+        self.detail.installEventFilter(self)
         self.detail.setFrameShape(QFrame.NoFrame)
         self.detail.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
         detail_layout.addWidget(self.detail, 1)
@@ -311,7 +401,7 @@ class MainWindow(QMainWindow):
     def append_dialogues(self, records):
         if not records:
             return
-        following = self._following
+        following = self._following and not self.search_edit.text().strip()
         bar = self.list_view.verticalScrollBar()
         old_scroll = bar.value()
         anchor = self.list_view.indexAt(self.list_view.viewport().rect().topLeft())
@@ -337,17 +427,21 @@ class MainWindow(QMainWindow):
         if self.model.rowCount() == count and not self.list_view.currentIndex().isValid():
             self.list_view.setCurrentIndex(self.model.index(self.model.rowCount() - 1))
         self._updating = False
+        self._show_detail(self.list_view.currentIndex())
+        self._selection_changed()
         self.count_label.setText(f'{self.model.rowCount():,} 条' if self.model.total_received <= self.model.max_records
                                  else f'最近 {self.model.rowCount():,} 条')
         self.copy_all_button.setEnabled(True)
         self.export_button.setEnabled(True)
         self._update_latest()
+        if self.search_edit.text().strip() and not self.search_timer.isActive():
+            self.search_timer.start()
 
     def _scroll_changed(self, value):
         if self._updating:
             return
         bar = self.list_view.verticalScrollBar()
-        self._following = value >= bar.maximum() - 3
+        self._following = not self.search_edit.text().strip() and value >= bar.maximum() - 3
         if self._following:
             self.unread_count = 0
         self._update_latest()
@@ -360,6 +454,7 @@ class MainWindow(QMainWindow):
         self.latest_button.setEnabled(not self._following or self.unread_count > 0)
 
     def return_to_latest(self):
+        self.search_edit.clear()
         self._updating = True
         self.list_view.scrollToBottom()
         self._following = True
@@ -368,7 +463,13 @@ class MainWindow(QMainWindow):
         self._update_latest()
 
     def _show_detail(self, current, previous=QModelIndex()):
-        record = current.data(RecordRole)
+        if self._updating:
+            return
+        # QVariant 会复制 dict；直接使用模型中的同一条记录以保留正文选区。
+        record = self.model.records[current.row()] if current.isValid() and 0 <= current.row() < self.model.rowCount() else None
+        if record is self._detail_record:
+            return
+        self._detail_record = record
         if record:
             self.detail_speaker.setText(record['speaker'])
             self.detail_time.setText(record['time'] or '未提供时间')
@@ -382,6 +483,97 @@ class MainWindow(QMainWindow):
             self.detail_speaker.setText('从左侧选择一条对白')
             self.detail_time.setText('人物与时间会显示在这里')
             self.detail.clear()
+        self._highlight_search()
+
+    def _focus_search(self):
+        self.search_edit.setFocus()
+        self.search_edit.selectAll()
+
+    def _search_changed(self, text):
+        if text.strip():
+            self._following = False
+            self._update_latest()
+            self.search_count.setText('正在查找…')
+            self.search_timer.start()
+        else:
+            self.search_timer.stop()
+            self._search_query = ''
+            self._search_matches = []
+            self._search_position = -1
+            self._search_record = None
+            self._update_search_feedback()
+            self._highlight_search()
+
+    def _refresh_search(self):
+        query = self.search_edit.text().strip().casefold()
+        if not query:
+            return
+        changed = query != self._search_query
+        base = self.model.total_received - self.model.rowCount()
+        if changed:
+            self._search_matches = self.model.search_rows(query)
+        else:
+            removed = base - self._search_base
+            self._search_matches = [row - removed for row in self._search_matches if row >= removed]
+            self._search_matches.extend(self.model.search_rows(query, self._search_total - base))
+        self._search_query = query
+        self._search_total = self.model.total_received
+        self._search_base = base
+        old_position = self._search_position
+        self._search_position = next((position for position, row in enumerate(self._search_matches)
+                                      if self.model.records[row] is self._search_record), -1)
+        if self._search_matches and (changed or self._search_position < 0):
+            self._search_position = 0 if changed else min(max(0, old_position), len(self._search_matches) - 1)
+            self._select_search_match()
+        elif not self._search_matches:
+            self._search_record = None
+        self._update_search_feedback()
+        self._highlight_search()
+
+    def _update_search_feedback(self):
+        count = len(self._search_matches)
+        self.search_count.setText(f'{self._search_position + 1} / {count}' if count else
+                                  '无匹配' if self.search_edit.text().strip() else '输入关键词')
+        self.search_previous_button.setEnabled(count > 0)
+        self.search_next_button.setEnabled(count > 0)
+
+    def _navigate_search(self, direction):
+        if self.search_timer.isActive():
+            self.search_timer.stop()
+            changed = self.search_edit.text().strip().casefold() != self._search_query
+            self._refresh_search()
+            if changed:
+                return
+        if not self._search_matches:
+            return
+        self._search_position = (self._search_position + direction) % len(self._search_matches)
+        self._select_search_match()
+        self._update_search_feedback()
+
+    def _select_search_match(self):
+        row = self._search_matches[self._search_position]
+        self._search_record = self.model.records[row]
+        self._updating = True
+        self.list_view.setCurrentIndex(self.model.index(row))
+        self.list_view.scrollTo(self.model.index(row), QAbstractItemView.PositionAtCenter)
+        self._updating = False
+        self._following = False
+        self._show_detail(self.list_view.currentIndex())
+        self._update_latest()
+
+    def _highlight_search(self):
+        selections = []
+        query = self.search_edit.text().strip()
+        if query:
+            cursor = self.detail.document().find(query)
+            while not cursor.isNull():
+                selection = QTextEdit.ExtraSelection()
+                selection.cursor = cursor
+                selection.format.setBackground(QColor('#66532b'))
+                selection.format.setForeground(QColor('#fff2c6'))
+                selections.append(selection)
+                cursor = self.detail.document().find(query, cursor)
+        self.detail.setExtraSelections(selections)
 
     def _selection_changed(self, *args):
         count = len(self.list_view.selectionModel().selectedRows())
@@ -402,7 +594,12 @@ class MainWindow(QMainWindow):
         self._copy_records(self.model.records)
 
     def eventFilter(self, watched, event):
-        if watched is self.list_view and event.type() == QEvent.KeyPress and event.matches(QKeySequence.Copy):
+        if event.type() == QEvent.KeyPress:
+            if (event.key() in (Qt.Key_Return, Qt.Key_Enter) and
+                    watched in (self.search_edit, self.list_view, self.detail) and self.search_edit.text().strip()):
+                self._navigate_search(-1 if event.modifiers() & Qt.ShiftModifier else 1)
+                return True
+        if event.type() == QEvent.KeyPress and watched is self.list_view and event.matches(QKeySequence.Copy):
             self.copy_selected()
             return True
         return super().eventFilter(watched, event)
@@ -420,29 +617,80 @@ class MainWindow(QMainWindow):
         else:
             self.start_capture()
 
-    def start_capture(self):
-        if self.demo or self.worker is not None:
+    def start_capture(self, launch_game=False):
+        if self.demo or self.worker is not None or self.launch_worker is not None or self._closing:
             return
         filename = self.path_edit.text().strip()
         if not filename or not Path(filename).is_file():
             self._set_status('error', '找不到游戏程序，请选择游戏目录中的 jshyl5.exe。')
             return
         self._save_preferences()
-        self._set_status('waiting', '正在等待游戏。请先启动金书红颜录，运行后会自动连接。')
-        self.worker = CaptureThread(filename, self.output_directory, self)
+        self._capture_launching = launch_game
+        self._capture_status_code = 'waiting'
+        self._set_status('waiting', '正在启动游戏并准备记录，请稍候…' if launch_game else
+                         '正在等待游戏。可点击“启动游戏”，运行后会自动连接。')
+        self.worker = CaptureThread(filename, self.output_directory, self, launch_game=launch_game)
         self.worker.dialogue.connect(self._enqueue_dialogue)
         self.worker.status.connect(self._capture_status)
         self.worker.finished.connect(self._worker_finished)
-        self.path_edit.setEnabled(False)
-        self.browse_button.setEnabled(False)
         self.start_button.setText('停止记录')
+        self._update_capture_controls()
         self.worker.start()
 
     def stop_capture(self):
         if self.worker:
             self.worker.stop_event.set()
             self.start_button.setText('正在停止…')
-            self.start_button.setEnabled(False)
+            self._update_capture_controls()
+
+    def launch_game(self):
+        if (self.demo or self.launch_worker is not None or self._capture_launching or self._closing or
+                (self.worker is not None and (self._capture_status_code != 'waiting' or self.worker.stop_event.is_set()))):
+            return
+        filename = self.path_edit.text().strip()
+        if not filename or not Path(filename).is_file():
+            self._set_status('error', '找不到游戏程序，请选择游戏目录中的 jshyl5.exe。')
+            return
+        self._save_preferences()
+        self._set_status('waiting' if self.worker else 'launching', '正在启动游戏，请稍候…')
+        self.launch_worker = LaunchThread(filename, self)
+        self.launch_worker.launched.connect(self._game_launched)
+        self.launch_worker.failed.connect(lambda message: self._set_status('error', message))
+        self.launch_worker.finished.connect(self._launch_finished)
+        self.launch_button.setText('正在启动…')
+        self._update_capture_controls()
+        self.launch_worker.start()
+
+    def _game_launched(self, result):
+        message = '游戏已在运行' if result['already_running'] else '游戏已启动'
+        message += f"（PID {result['pid']}）。"
+        message += '正在等待自动连接。' if self.worker and self._capture_status_code == 'waiting' else \
+                   '正在记录对白。' if self.worker and self._capture_status_code == 'connected' else '点击“开始记录”即可接收对白。'
+        self._set_status(self._capture_status_code if self.worker else 'stopped', message)
+
+    def _launch_finished(self):
+        finished, self.launch_worker = self.launch_worker, None
+        self.launch_button.setText('启动游戏')
+        self._update_capture_controls()
+        if finished:
+            finished.deleteLater()
+        self._close_when_workers_finish()
+
+    def _update_capture_controls(self):
+        capturing = self.worker is not None
+        launching = self.launch_worker is not None
+        available = not self.demo and not self._closing
+        self.path_edit.setEnabled(not capturing and not launching and not self._closing)
+        self.browse_button.setEnabled(not capturing and not launching and not self._closing)
+        self.launch_capture_button.setEnabled(available and not capturing and not launching)
+        self.launch_button.setEnabled(available and not launching and not self._capture_launching and
+                                      (not capturing or (self._capture_status_code == 'waiting' and not self.worker.stop_event.is_set())))
+        self.start_button.setEnabled(available and (not launching or capturing) and
+                                     (not capturing or not self.worker.stop_event.is_set()))
+
+    def _close_when_workers_finish(self):
+        if self._closing and self.worker is None and self.launch_worker is None:
+            QTimer.singleShot(0, self.close)
 
     def _enqueue_dialogue(self, record):
         self._pending.append(record)
@@ -453,15 +701,19 @@ class MainWindow(QMainWindow):
             self.append_dialogues(records)
 
     def _capture_status(self, code, message, details):
+        self._capture_status_code = code
+        if code in ('connected', 'error', 'stopped'):
+            self._capture_launching = False
         text_path = details.get('text_path')
         if text_path:
             self.output_directory = Path(text_path).parent
         self._set_status(code, message)
+        self._update_capture_controls()
 
     def _set_status(self, code, message):
         self._last_status = code
         titles = {'waiting': '等待游戏', 'connected': '正在记录', 'error': '需要处理',
-                  'stopped': '尚未连接', 'demo': '演示模式'}
+                  'stopped': '尚未连接', 'demo': '演示模式', 'launching': '正在启动'}
         self.status_badge.setText(titles.get(code, code))
         self.status_badge.setProperty('state', code)
         self.status_badge.style().unpolish(self.status_badge)
@@ -475,17 +727,16 @@ class MainWindow(QMainWindow):
     def _worker_finished(self):
         finished = self.worker
         self.worker = None
+        self._capture_launching = False
+        self._capture_status_code = 'stopped'
         self._flush_pending()
-        self.path_edit.setEnabled(True)
-        self.browse_button.setEnabled(True)
         self.start_button.setText('开始记录')
-        self.start_button.setEnabled(True)
+        self._update_capture_controls()
         if self._last_status != 'error':
             self._set_status('stopped', '记录已停止。已有对白和记录文件仍然保留。')
         if finished:
             finished.deleteLater()
-        if self._closing:
-            QTimer.singleShot(0, self.close)
+        self._close_when_workers_finish()
 
     def export_text(self):
         if not self.model.records:
@@ -524,19 +775,28 @@ class MainWindow(QMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, 'splitter'):
-            orientation = Qt.Vertical if self.width() < 940 else Qt.Horizontal
+            compact = self.width() < 940
+            orientation = Qt.Vertical if compact else Qt.Horizontal
             if self.splitter.orientation() != orientation:
                 self.splitter.setOrientation(orientation)
                 self.splitter.setSizes([280, 320] if orientation == Qt.Vertical else [410, 620])
+            self.detail_header.setVisible(not compact)
+            self.detail_layout.setContentsMargins(*(18, 12, 18, 12) if compact else (22, 15, 22, 18))
+            self.detail_layout.setSpacing(6 if compact else 10)
+            if self.detail_speaker.property('compact') != compact:
+                self.detail_speaker.setProperty('compact', compact)
+                self.detail_speaker.style().unpolish(self.detail_speaker)
+                self.detail_speaker.style().polish(self.detail_speaker)
             if hasattr(self, 'feedback'):
                 self.feedback.setVisible(self.width() >= 960)
 
     def closeEvent(self, event):
         self._save_preferences()
-        if self.worker and self.worker.isRunning():
+        if self.worker is not None or self.launch_worker is not None:
             self._closing = True
             self.stop_capture()
-            self._set_status('waiting', '正在停止记录并保存文件，完成后窗口会自动关闭。')
+            self._update_capture_controls()
+            self._set_status('waiting', '正在等待后台任务结束并保存记录，完成后窗口会自动关闭。')
             event.ignore()
             return
         self._flush_pending()

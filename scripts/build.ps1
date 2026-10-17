@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$version = '0.2.0'
+$version = '0.3.0'
 $env:PYTHONUTF8 = '1'
 
 function Get-ProjectPath([string]$Path) {

@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/v/release/460649891/jinshu-dialogue)](https://github.com/460649891/jinshu-dialogue/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-把《金书红颜录》的标准人物对话实时显示为可选择、复制和导出的文字。桌面版使用 PySide6，支持游戏路径选择、多条复制和阅读历史时保持滚动位置。
+把《金书红颜录》的标准人物对话实时显示为可选择、复制和导出的文字。桌面版使用 PySide6，支持一键启动并记录、搜索定位、多条复制和阅读历史时保持滚动位置。
 
 ![金书对话录演示界面](docs/screenshots/desktop-demo.png)
 
@@ -12,12 +12,14 @@
 
 ## 快速使用
 
-1. 从 [正式版本下载页](https://github.com/460649891/jinshu-dialogue/releases/latest) 下载 `JinshuDialogue-0.2.0-windows-x64.zip`，**完整解压**到可写文件夹。
+1. 从 [正式版本下载页](https://github.com/460649891/jinshu-dialogue/releases/latest) 下载 `JinshuDialogue-0.3.0-windows-x64.zip`，**完整解压**到可写文件夹。
 2. 双击文件夹中的 `JinshuDialogue.exe`，无需安装 Python。
-3. 在界面中选择游戏主程序 `jshyl5.exe`，按提示连接游戏。可先启动游戏，也可先打开本工具。
+3. 选择游戏主程序 `jshyl5.exe`，点击“启动游戏并开始记录”。也可使用“启动游戏”仅打开游戏，或在游戏运行后点击“开始记录”。已运行时会复用游戏，不再启动第二个窗口。
 4. 触发一段新的标准人物对话。选择一条或多条记录后，使用复制按钮或 `Ctrl+C`；可切换复制时是否包含人物名。
 
 查看历史时，新消息继续保存，列表保持当前阅读位置；点击“回到最新”恢复跟随。关闭工具会停止采集，游戏可继续运行。
+
+按 `Ctrl+F` 搜索人物名或正文，使用 `Enter` / `F3` 查找下一处，`Shift+Enter` / `Shift+F3` 查找上一处。匹配结果直接定位到原对白列表，保留上下文；`Esc` 清除搜索。“回到最新”清除搜索并恢复跟随。搜索范围为界面最近 2,000 条，完整历史可在 TXT / JSONL 记录中查找。
 
 每次采集会持续写入 UTF-8 TXT 和 JSONL 文件，默认位于应用旁的 `对话记录/`。个人设置保存在应用的数据目录中；应用目录不可写时回退到 `%LOCALAPPDATA%\JinshuDialogue`。保留完整文件夹结构，勿单独移动 EXE 或删除 `_internal/`。程序不会自动覆盖剪贴板。
 
@@ -50,7 +52,7 @@
 
 文档入口：[架构与采集原理](docs/architecture.md) · [开发指南](docs/development.md) · [版本兼容](docs/compatibility.md) · [发布流程](docs/releasing.md) · [文档规范](docs/documentation.md) · [参与贡献](CONTRIBUTING.md)。
 
-需要 Python **3.12 x64**；Node.js 仅用于原生事件分类测试。运行依赖和构建工具分别锁定在 `requirements.txt`、`requirements-build.txt`。
+需要 Python **3.12 x64**；Node.js 用于原生提交快照测试。运行依赖和构建工具分别锁定在 `requirements.txt`、`requirements-build.txt`。
 
 在项目目录使用 PowerShell：
 
@@ -88,22 +90,22 @@ powershell -ExecutionPolicy Bypass -File scripts\build.ps1 -Python .venv\Scripts
 
 构建采用 PyInstaller `onedir`，GUI 入口为 `src/gui.py`，关闭控制台窗口。中间产物位于 `.build/`；`release/` 包含：
 
-- `JinshuDialogue-0.2.0-windows-x64.zip`：可运行文件夹、README、许可证和第三方声明。
-- `JinshuDialogue-0.2.0-source.zip`：按允许清单收集的源码和构建材料。
+- `JinshuDialogue-0.3.0-windows-x64.zip`：可运行文件夹、README、许可证和第三方声明。
+- `JinshuDialogue-0.3.0-source.zip`：按允许清单收集的源码和构建材料。
 - `SHA256SUMS`：两个 ZIP 的 SHA-256 校验值。
 
 只生成源码包或预览文件清单：
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\package_source.py --list
-.\.venv\Scripts\python.exe scripts\package_source.py --output release\JinshuDialogue-0.2.0-source.zip
+.\.venv\Scripts\python.exe scripts\package_source.py --output release\JinshuDialogue-0.3.0-source.zip
 ```
 
 源码包明确排除环境、游戏文件、诊断工具、个人配置、对话记录及内部计划。构建脚本不会运行真实采集。GitHub Actions 在 Windows 上执行离线测试并上传构建 artifact，不自动创建公开 Release。
 
 ## 工作原理
 
-Frida 在游戏进程内临时监听已适配的文字更新与绘制入口，读取人物名和正文，再由 Python 按逻辑对话事件配对、去重并保存。GUI 使用后台采集线程，主线程负责阅读和复制。原文按游戏编码解码后，以 UTF-8 保存。
+Frida 在游戏完整正文写入完成的位置读取快照，按同一对白对象的人物编号解析姓名，将姓名和正文一次发送给 Python。采集不再依赖绘制顺序；Python 按事件身份去重并保存。GUI 使用后台采集线程，主线程负责阅读和复制。原文按游戏编码解码后，以 UTF-8 保存。
 
 程序不使用截图 OCR，不修改游戏程序、素材或存档；退出采集时解除本次连接。资源由 `src/agent.js`、`src/theme.qss`、`assets/` 与 `profiles/` 提供，发行版在 `_internal/` 中保留对应相对路径。
 

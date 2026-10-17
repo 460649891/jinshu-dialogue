@@ -1,31 +1,4 @@
 'use strict';
-function classifyRender(caller, rect) {
-    if (caller === 0x3cfef && rect[0] === 25 && rect[1] === 5 && rect[2] === 640 && rect[3] === 480) return 'speaker';
-    if (caller === 0x3cbe0 && rect[0] === 0 && rect[1] === 0 && rect[2] === 490 && rect[3] > 0 && rect[3] <= 240) return 'text';
-    return null;
-}
-class DialogueTracker {
-    constructor() { this.sequence = 0; this.threads = new Map(); }
-    begin(thread, owner) {
-        const stack = this.threads.get(thread) || [];
-        stack.push({owner, sequence:++this.sequence, speaker:[], emitted:false});
-        this.threads.set(thread, stack);
-    }
-    current(thread) { const stack=this.threads.get(thread); return stack?.[stack.length-1] || null; }
-    end(thread) {
-        const stack=this.threads.get(thread);
-        if (stack) { stack.pop(); if (!stack.length) this.threads.delete(thread); }
-    }
-    name(thread, raw) { const frame=this.current(thread); if(frame) frame.speaker=raw; }
-    body(thread, raw) {
-        const frame=this.current(thread);
-        if(!frame || frame.emitted || !raw.length) return null;
-        frame.emitted=true;
-        return {sequence:frame.sequence, speaker:frame.speaker, text:raw};
-    }
-}
-if (typeof module !== 'undefined') module.exports = {classifyRender, DialogueTracker};
-
 if (typeof Process !== 'undefined') {
     const profile = globalThis.PROFILE;
     const main = Process.getModuleByName('jshyl5.exe');
@@ -37,45 +10,52 @@ if (typeof Process !== 'undefined') {
         const actual=new Uint8Array(main.base.add(signature.rva).readByteArray(signature.bytes.length));
         if (!signature.bytes.every((byte,index)=>actual[index]===byte)) throw new Error('游戏函数签名不匹配，已停止监听。');
     }
-    const tracker=new DialogueTracker();
-    const drawing=new Map();
+    let sequence=0;
     function readString(object, maximum=65536) {
         const length=object.add(4).readU32();
         if(length>maximum) throw new Error('对白字符串长度异常');
         return length ? Array.from(new Uint8Array(object.readPointer().readByteArray(length))) : [];
     }
-    // This call stays active until the player closes the dialogue. Each call
-    // owns its name and identity, including identical dialogue shown later.
-    Interceptor.attach(main.base.add(profile.dialogue_rva), {
-        onEnter() { tracker.begin(this.threadId, this.context.ecx.toString()); },
-        onLeave() { tracker.end(this.threadId); }
-    });
-    Interceptor.attach(main.base.add(profile.draw_rva), {
+    function readSpeaker(owner) {
+        const layout=profile.snapshot;
+        const role=owner.add(layout.role_offset).readS32();
+        if(role<0) return [];
+        const count=main.base.add(layout.role_count_rva).readU16();
+        if(role>=count) throw new Error('对白人物编号超出适配范围：' + role + '/' + count);
+        const flag=main.base.add(layout.pointer_key_rva).readU8();
+        if(!flag) throw new Error('人物数据尚未初始化');
+        const key=(flag ^ 0x6d)*0x01010101;
+        const table=main.base.add(layout.role_table_rva).readPointer();
+        const roleAddress=ptr((table.add(role*4).readU32() ^ key) >>> 0);
+        const decodeBase=main.base.add(layout.decode_table_rva).readPointer();
+        const decodeOffset=main.base.add(layout.decode_offset_rva).readU32();
+        const name=[];
+        for(let i=0;i<layout.name_max_bytes;i++) {
+            const address=roleAddress.add(layout.name_offset+i);
+            const page=ptr((address.toUInt32() & 0xfffffe00) >>> 0);
+            const index=page.add(4).readU8()+decodeOffset;
+            const decoded=decodeBase.add(index*256+address.readU8()).readU8();
+            if(!decoded) break;
+            name.push(decoded);
+        }
+        return name;
+    }
+    // The game updates the role before replacing the body and can draw in
+    // between. Capture only after the assignment returns, while this game
+    // thread is paused in the hook. No name/body caches or paint ordering.
+    Interceptor.attach(main.base.add(profile.assign_rva), {
         onEnter() {
-            this.key=this.threadId;
-            const stack=drawing.get(this.key)||[];
-            stack.push(this.context.ecx.toString()); drawing.set(this.key,stack);
+            if(this.returnAddress.sub(main.base).toUInt32()===profile.commit_rva) {
+                this.owner=this.context.ecx.sub(profile.snapshot.body_offset);
+            }
         },
         onLeave() {
-            const stack=drawing.get(this.key);
-            stack.pop(); if(!stack.length)drawing.delete(this.key);
-        }
-    });
-    function matches(thread) {
-        const frame=tracker.current(thread), stack=drawing.get(thread);
-        return frame && stack && stack[stack.length-1]===frame.owner;
-    }
-    Interceptor.attach(main.base.add(profile.name_render_rva), {
-        onEnter(args) {
-            if(this.returnAddress.sub(main.base).toUInt32()!==profile.name_caller_rva || !matches(this.threadId))return;
-            tracker.name(this.threadId,readString(args[2],1024));
-        }
-    });
-    Interceptor.attach(main.base.add(profile.body_render_rva), {
-        onEnter(args) {
-            if(this.returnAddress.sub(main.base).toUInt32()!==profile.body_caller_rva || !matches(this.threadId))return;
-            const event=tracker.body(this.threadId,readString(args[1]));
-            if(event) send({event:'dialogue', ...event});
+            if(!this.owner) return;
+            const owner=this.owner;
+            const text=readString(owner.add(profile.snapshot.body_offset));
+            if(!text.length) return;
+            const speaker=readSpeaker(owner);
+            send({event:'dialogue', sequence:++sequence, speaker, text});
         }
     });
     send({event:'ready',path:main.path,arch:Process.arch});

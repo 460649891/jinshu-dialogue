@@ -8,6 +8,7 @@ import uuid
 
 from dialogue import DialogueAssembler, DialogueWriter
 from settings import RESOURCE_ROOT, inspect_executable
+from game import running_game_pid
 
 
 class EventSink:
@@ -32,9 +33,10 @@ class EventSink:
 
 class CaptureService:
     """每次启动对应一个工作线程，停止信号也能取消等待中的 Frida 调用。"""
-    def __init__(self, executable, output_directory):
+    def __init__(self, executable, output_directory, launch_game=False):
         self.executable = executable
         self.output_directory = Path(output_directory)
+        self.launch_game = launch_game
 
     def run(self, stop_event, on_status, on_dialogue):
         if stop_event.is_set():
@@ -43,6 +45,8 @@ class CaptureService:
         sink = EventSink(self.output_directory)
         session = None
         watcher = None
+        device = None
+        spawned_pid = None
         finished = threading.Event()
         try:
             profile = inspect_executable(self.executable)
@@ -68,7 +72,8 @@ class CaptureService:
             code = (RESOURCE_ROOT / 'src' / 'agent.js').read_text(encoding='utf-8')
             token = None
             retry_at = 0
-            on_status('waiting', '等待游戏启动…', {})
+            launch_pending = self.launch_game
+            on_status('waiting', '正在启动游戏并准备记录…' if launch_pending else '等待游戏启动…', {})
             with cancellation:
                 device = frida.get_local_device()
                 while not stop_event.is_set():
@@ -76,20 +81,27 @@ class CaptureService:
                         raise RuntimeError('对话事件积压过多，已停止监听。请重新开始；已保存的记录仍可使用。')
                     if session is None and time.monotonic() >= retry_at:
                         retry_at = time.monotonic() + 1
-                        candidates = [p for p in device.enumerate_processes()
-                                      if p.name.lower() == Path(profile['executable']).name.lower()]
-                        if len(candidates) > 1:
-                            raise ValueError('检测到多个游戏进程，请只保留一个金书红颜录窗口。')
-                        if candidates:
+                        pid = running_game_pid(device, profile['executable'])
+                        if pid is None and launch_pending:
+                            # Frida starts it suspended: no first dialogue can
+                            # run between process creation and script loading.
+                            spawned_pid = device.spawn([profile['executable']],
+                                                       cwd=str(Path(profile['executable']).parent))
+                            pid = spawned_pid
+                        launch_pending = False
+                        if pid is not None:
                             token = uuid.uuid4().hex
                             current_token = token
-                            session = device.attach(candidates[0].pid)
+                            session = device.attach(pid)
                             session.on('detached', lambda reason, crash, t=current_token:
                                        enqueue(t, {'type':'detached', 'reason':reason}))
                             script = session.create_script('globalThis.PROFILE=' + json.dumps(
                                 {**profile, 'session':token}, ensure_ascii=False) + ';\n' + code)
                             script.on('message', lambda message, data, t=current_token: enqueue(t, message))
                             script.load()
+                            if spawned_pid is not None:
+                                device.resume(spawned_pid)
+                                spawned_pid = None
                     try:
                         event_token, message = events.get(timeout=0.1)
                     except queue.Empty:
@@ -123,6 +135,14 @@ class CaptureService:
             finished.set()
             if watcher is not None:
                 watcher.join(timeout=0.3)
+            if spawned_pid is not None and device is not None:
+                # Cancellation or an attach/script failure must never strand
+                # the user's newly launched game in a suspended state.
+                try:
+                    with frida.Cancellable():
+                        device.resume(spawned_pid)
+                except Exception as error:
+                    on_status('error', '游戏恢复运行失败，请关闭该游戏窗口后重试：' + str(error), {})
             if session is not None:
                 try:
                     session.detach()

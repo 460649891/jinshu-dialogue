@@ -12,7 +12,7 @@ import sys
 import tempfile
 import zipfile
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = {
     "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "CHANGELOG.md", ".gitignore",

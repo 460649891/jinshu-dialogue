@@ -9,6 +9,7 @@ QLabel#statusBadge { color: #b6c7d2; background: #1c2935; border: 1px solid #344
 QLabel#statusBadge[state="connected"] { color: #92e5cf; background: #14362f; border-color: #326256; }
 QLabel#statusBadge[state="demo"] { color: #a5d8e5; background: #16313d; border-color: #315565; }
 QLabel#statusBadge[state="waiting"] { color: #e0cc98; background: #322e20; border-color: #61563b; }
+QLabel#statusBadge[state="launching"] { color: #e0cc98; background: #322e20; border-color: #61563b; }
 QLabel#statusBadge[state="error"] { color: #ffc0b4; background: #3a2629; border-color: #70494a; }
 QFrame#connectionPanel { background: #111d29; border: 1px solid #293746; border-radius: 12px; }
 QLabel#fieldLabel { color: #c4d3dc; font-size: 12px; }
@@ -46,6 +47,7 @@ QListView#dialogueList { background: #101923; border: none; outline: none; paddi
 QListView#dialogueList:focus { border: none; }
 QTextEdit#detailText { background: transparent; color: #e1e9ed; border: none; font-size: 17px; padding: 6px 0; selection-background-color: #2c6a5b; selection-color: #f2fffb; }
 QLabel#detailSpeaker { color: #8cddc8; font-size: 21px; font-weight: 600; padding-top: 14px; }
+QLabel#detailSpeaker[compact="true"] { font-size: 19px; padding-top: 0; }
 QLabel#emptyTitle { color: #b8d5d7; font-size: 23px; }
 QLabel#emptyCaption { color: #9bb0bd; font-size: 13px; line-height: 1.6; }
 QSplitter::handle { background: #0b121b; }

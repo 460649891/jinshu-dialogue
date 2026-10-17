@@ -18,6 +18,7 @@ class DialogueListModel(QAbstractListModel):
     def __init__(self, parent=None, max_records=2000):
         super().__init__(parent)
         self.records = []
+        self._search_texts = []
         self.max_records = max(1, max_records)
         self.total_received = 0
 
@@ -53,13 +54,21 @@ class DialogueListModel(QAbstractListModel):
         if remove:
             self.beginRemoveRows(QModelIndex(), 0, remove - 1)
             del self.records[:remove]
+            del self._search_texts[:remove]
             self.endRemoveRows()
         clean = clean[max(0, overflow - remove):]
         first = len(self.records)
         self.beginInsertRows(QModelIndex(), first, first + len(clean) - 1)
         self.records.extend(clean)
+        self._search_texts.extend(f"{record['speaker']}\n{record['text']}".casefold() for record in clean)
         self.endInsertRows()
         return len(clean)
+
+    def search_rows(self, query, start=0):
+        """只搜索保留的原始记录，可从新增区间继续查找。"""
+        query = query.casefold()
+        return [row for row in range(max(0, start), len(self.records))
+                if query and query in self._search_texts[row]]
 
 
 class DialogueDelegate(QStyledItemDelegate):
