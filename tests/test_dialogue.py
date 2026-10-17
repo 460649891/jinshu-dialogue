@@ -4,12 +4,48 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from datetime import datetime
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from dialogue import DialogueAssembler, DialogueWriter
 
 
 class DialogueTests(unittest.TestCase):
+    def test_human_timestamp_formats_iso_and_legacy_clock_values(self):
+        from dialogue import format_timestamp
+        self.assertEqual('2026-10-17 20:10:30', format_timestamp('2026-10-17T20:10:30.123+08:00'))
+        self.assertEqual('20:10:30', format_timestamp('2026-10-17T20:10:30.123+08:00', short=True))
+        self.assertEqual('2026-10-17 20:10:30', format_timestamp('2026-10-17 20:10:30'))
+        self.assertEqual('20:10:30', format_timestamp('20:10:30'))
+        self.assertEqual('', format_timestamp(None))
+        self.assertEqual('', format_timestamp('invalid timestamp'))
+
+    def test_readable_filenames_keep_same_second_sessions_distinct(self):
+        with tempfile.TemporaryDirectory() as directory, patch('dialogue.datetime') as clock:
+            clock.now.return_value = datetime(2026, 10, 17, 20, 10, 30, 123456)
+            first = DialogueWriter(directory)
+            first.write('甲', '第一份。')
+            first.close()
+            second = DialogueWriter(directory)
+            second.write('乙', '第二份。')
+            second.close()
+            self.assertEqual('对话记录_2026-10-17_20-10-30.txt', first.text_path.name)
+            self.assertEqual('对话记录_2026-10-17_20-10-30_02.txt', second.text_path.name)
+            self.assertEqual(second.text_path.stem, second.json_path.stem)
+            self.assertIn('甲：第一份。', first.text_path.read_text(encoding='utf-8'))
+
+    def test_existing_json_record_is_not_overwritten_or_left_with_empty_txt(self):
+        with tempfile.TemporaryDirectory() as directory, patch('dialogue.datetime') as clock:
+            clock.now.return_value = datetime(2026, 10, 17, 20, 10, 30)
+            existing = Path(directory) / '对话记录_2026-10-17_20-10-30.jsonl'
+            existing.write_text('原有记录', encoding='utf-8')
+            writer = DialogueWriter(directory)
+            writer.close()
+            self.assertEqual('对话记录_2026-10-17_20-10-30_02.txt', writer.text_path.name)
+            self.assertEqual('原有记录', existing.read_text(encoding='utf-8'))
+            self.assertFalse(existing.with_suffix('.txt').exists())
+
     def test_pairs_actual_gbk_speaker_and_complete_text(self):
         # A wrong encoding or pairing would corrupt the copied transcript.
         parser = DialogueAssembler()

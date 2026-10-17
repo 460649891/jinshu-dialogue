@@ -16,10 +16,10 @@ from PySide6.QtWidgets import (
 
 if __package__:
     from .settings import APP_ROOT, RESOURCE_ROOT, VERSION, load_settings, save_settings, writable_app_directory
-    from .ui_model import DialogueDelegate, DialogueListModel, RecordRole, format_records
+    from .ui_model import DialogueDelegate, DialogueListModel, RecordRole, format_records, format_timestamp
 else:
     from settings import APP_ROOT, RESOURCE_ROOT, VERSION, load_settings, save_settings, writable_app_directory
-    from ui_model import DialogueDelegate, DialogueListModel, RecordRole, format_records
+    from ui_model import DialogueDelegate, DialogueListModel, RecordRole, format_records, format_timestamp
 
 
 class CaptureThread(QThread):
@@ -472,7 +472,7 @@ class MainWindow(QMainWindow):
         self._detail_record = record
         if record:
             self.detail_speaker.setText(record['speaker'])
-            self.detail_time.setText(record['time'] or '未提供时间')
+            self.detail_time.setText(format_timestamp(record['time']) or '未提供时间')
             self.detail.setPlainText(record['text'])
             cursor = self.detail.textCursor()
             cursor.select(QTextCursor.Document)
@@ -812,7 +812,7 @@ class MainWindow(QMainWindow):
             ('客栈掌柜', '慢些走。过桥之后向东，桃花最多的地方，就是你们要找的村子。'),
             ('同行少女', '好，我们天晴就出发。'),
         ]
-        return [dict(speaker=speaker, text=text, time=f'20:18:{12 + i * 3:02d}', session='demo', sequence=i + 1)
+        return [dict(speaker=speaker, text=text, time=f'2026-10-17T20:18:{12 + i * 3:02d}.000+08:00', session='demo', sequence=i + 1)
                 for i, (speaker, text) in enumerate(lines)]
 
 

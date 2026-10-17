@@ -33,10 +33,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build.ps1
 
 ```powershell
 $releaseCommit = git rev-parse HEAD
-git tag -a v0.3.0 $releaseCommit -m 'Release v0.3.0'
-git push origin v0.3.0
-gh release create v0.3.0 --repo 460649891/jinshu-dialogue --target $releaseCommit --verify-tag --title '金书对话录 v0.3.0' --notes-file release\release-notes.md
-gh release upload v0.3.0 --repo 460649891/jinshu-dialogue release\JinshuDialogue-0.3.0-windows-x64.zip release\JinshuDialogue-0.3.0-source.zip release\SHA256SUMS
+git tag -a v0.3.1 $releaseCommit -m 'Release v0.3.1'
+git push origin v0.3.1
+gh release create v0.3.1 --repo 460649891/jinshu-dialogue --target $releaseCommit --verify-tag --title '金书对话录 v0.3.1' --notes-file release\release-notes.md
+gh release upload v0.3.1 --repo 460649891/jinshu-dialogue release\JinshuDialogue-0.3.1-windows-x64.zip release\JinshuDialogue-0.3.1-source.zip release\SHA256SUMS
 ```
 
 `--verify-tag` 要求已推送的标签存在。后续版本替换示例中的标签和文件名；不要覆盖已经公开的标签或同名资产，修复应发布新补丁版本。

@@ -33,6 +33,8 @@
 
 搜索按人物名或正文匹配，输入防抖 150 ms，结果指向原列表而不隐藏上下文；新增和裁剪后维护当前匹配记录。搜索时暂停自动跟随，明确返回最新后恢复。正文高亮不修改原始记录和复制内容。
 
+时间的原始值保留在记录与 JSONL 中；详情和列表共用格式化函数，分别显示日期加时钟与简短时钟，精确到秒。文件名使用 Windows 可用的日期和时分秒；同秒重名时用独占创建重试并追加编号，避免覆盖现有 TXT 或 JSONL。
+
 纯启动由 `src/game.py` 校验主程序并使用独立工作线程调用 `Popen([executable], cwd=游戏目录, shell=False)`。组合入口由 `CaptureService(..., launch_game=True)` 使用 Frida 创建暂停进程，依次 attach、加载 agent、resume；失败或取消也会尝试恢复已创建的进程，不终止用户游戏。已运行时只连接现有游戏，退出后等待手动重新启动。
 
 PyInstaller 构建为 `onedir`，Qt、Python 和 Frida 随 `_internal` 一起分发，不依赖接收者安装 Python。源码 ZIP 使用允许清单，排除个人路径设置、游戏、诊断、对白记录及开发环境。第三方许可证通过已校验的本地缓存离线收集，来源见 `scripts/licenses/SOURCES.json`。

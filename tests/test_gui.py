@@ -81,6 +81,12 @@ class ReaderTests(unittest.TestCase):
         QTest.keyClick(self.window.detail, Qt.Key_C, Qt.ControlModifier)
         self.assertEqual('山路向云深处延伸', self.app.clipboard().text())
 
+    def test_detail_formats_raw_iso_time_without_changing_record(self):
+        timestamp = '2026-10-17T20:10:30.123+08:00'
+        self.window.append_dialogues([dict(speaker='行者', text='测试时间。', time=timestamp)])
+        self.assertEqual('2026-10-17 20:10:30', self.window.detail_time.text())
+        self.assertEqual(timestamp, self.window.model.records[0]['time'])
+
     def test_new_messages_preserve_history_selection_focus_and_scroll(self):
         self.window.append_dialogues(records(80))
         QTest.qWait(30)
@@ -522,7 +528,8 @@ class ReaderTests(unittest.TestCase):
                 on_status('connected', '正在接收对白', {})
                 for sequence in range(350):
                     on_dialogue(dict(speaker=f'人物{sequence}', text=f'正文{sequence}',
-                                     time=f'时刻{sequence}', sequence=sequence, session='burst'))
+                                     time=f'2026-10-17T20:{sequence // 60:02d}:{sequence % 60:02d}.000+08:00',
+                                     sequence=sequence, session='burst'))
                 stop_event.wait(2)
 
         with patch.dict(sys.modules, {'capture': SimpleNamespace(CaptureService=BurstCapture)}):
@@ -537,12 +544,12 @@ class ReaderTests(unittest.TestCase):
                 self.window.list_view.setCurrentIndex(self.window.model.index(12))
                 self.assertEqual('人物332', self.window.detail_speaker.text())
                 self.assertEqual('正文332', self.window.detail.toPlainText())
-                self.assertEqual('时刻332', self.window.detail_time.text())
+                self.assertEqual('2026-10-17 20:05:32', self.window.detail_time.text())
                 self.window.search_edit.setText('正文349')
                 QTest.qWait(190)
                 self.assertEqual('人物349', self.window.detail_speaker.text())
                 self.assertEqual('正文349', self.window.detail.toPlainText())
-                self.assertEqual('时刻349', self.window.detail_time.text())
+                self.assertEqual('2026-10-17 20:05:49', self.window.detail_time.text())
             finally:
                 self.window.stop_capture()
                 QTest.qWait(40)

@@ -1,8 +1,23 @@
 """Conversation processing, kept independent of native instrumentation."""
-from datetime import datetime
+from datetime import datetime, time
 from collections import deque
 import json
 from pathlib import Path
+
+
+def format_timestamp(value, short=False):
+    """按记录中的日期和时钟显示到秒，兼容旧版 ISO 时间及演示时钟。"""
+    if not value:
+        return ''
+    value = str(value).strip()
+    try:
+        timestamp = datetime.fromisoformat(value)
+        return timestamp.strftime('%H:%M:%S' if short else '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        try:
+            return time.fromisoformat(value).strftime('%H:%M:%S')
+        except ValueError:
+            return ''
 
 
 class DialogueAssembler:
@@ -55,15 +70,31 @@ class DialogueWriter:
     def __init__(self, directory, session_name=None):
         directory = Path(directory)
         directory.mkdir(parents=True, exist_ok=True)
-        session_name = session_name or datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f')
-        self.text_path = directory / (session_name + '.txt')
-        self.json_path = directory / (session_name + '.jsonl')
-        self._text = self.text_path.open('x', encoding='utf-8', newline='\n')
-        try:
-            self._json = self.json_path.open('x', encoding='utf-8', newline='\n')
-        except Exception:
-            self._text.close()
-            raise
+        automatic = not session_name
+        stem = session_name or datetime.now().strftime('对话记录_%Y-%m-%d_%H-%M-%S')
+        number = 1
+        while True:
+            name = stem if number == 1 else f'{stem}_{number:02d}'
+            self.text_path = directory / (name + '.txt')
+            self.json_path = directory / (name + '.jsonl')
+            try:
+                self._text = self.text_path.open('x', encoding='utf-8', newline='\n')
+            except FileExistsError:
+                if not automatic:
+                    raise
+                number += 1
+                continue
+            try:
+                self._json = self.json_path.open('x', encoding='utf-8', newline='\n')
+            except Exception as error:
+                self._text.close()
+                if automatic and isinstance(error, FileExistsError):
+                    # Only remove the empty TXT just created by this attempt.
+                    self.text_path.unlink()
+                    number += 1
+                    continue
+                raise
+            break
 
     def write(self, speaker, text, **metadata):
         self._text.write(f'{speaker}：{text}\n\n')

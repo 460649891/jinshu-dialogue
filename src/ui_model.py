@@ -3,6 +3,11 @@ from PySide6.QtCore import QAbstractListModel, QModelIndex, QRect, QSize, Qt
 from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import QStyle, QStyledItemDelegate
 
+if __package__:
+    from .dialogue import format_timestamp
+else:
+    from dialogue import format_timestamp
+
 RecordRole = int(Qt.UserRole) + 1
 
 
@@ -99,7 +104,7 @@ class DialogueDelegate(QStyledItemDelegate):
         font.setWeight(QFont.Normal)
         painter.setFont(font)
         painter.setPen(QColor('#9baebc'))
-        time_text = record['time'].split('T')[-1].split(' ')[-1][:8]
+        time_text = format_timestamp(record['time'], short=True) or '--:--:--'
         painter.drawText(QRect(rect.right() - 100, rect.top() + 15, 80, 24), Qt.AlignRight | Qt.AlignVCenter, time_text)
         font.setPointSizeF(10.5)
         painter.setFont(font)
