@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import tempfile
 
-VERSION = '0.3.1'
+VERSION = '0.4.0'
 RESOURCE_ROOT = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parents[1]))
 APP_ROOT = Path(sys.executable).resolve().parent if getattr(sys, 'frozen', False) else RESOURCE_ROOT
 DEFAULTS = {'game_executable':'', 'include_speaker':True, 'always_on_top':False, 'window_geometry':''}

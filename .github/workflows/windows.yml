@@ -44,16 +44,16 @@ jobs:
       - name: Packaged GUI demo smoke test
         shell: pwsh
         run: |
-          Expand-Archive -LiteralPath ./release/JinshuDialogue-0.3.1-windows-x64.zip -DestinationPath ./.qa/portable
+          Expand-Archive -LiteralPath ./release/JinshuDialogue-0.4.0-windows-x64.zip -DestinationPath ./.qa/portable
           $env:PYTHONHOME = ''
           $env:PYTHONPATH = ''
           $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
-          $process = Start-Process -FilePath ./.qa/portable/JinshuDialogue-0.3.1-windows-x64/JinshuDialogue.exe -ArgumentList '--demo', '--smoke-test' -WindowStyle Hidden -PassThru
+          $process = Start-Process -FilePath ./.qa/portable/JinshuDialogue-0.4.0-windows-x64/JinshuDialogue.exe -ArgumentList '--demo', '--smoke-test' -WindowStyle Hidden -PassThru
           if (-not $process.WaitForExit(30000)) { $process.Kill(); throw 'Packaged GUI smoke test timed out.' }
           if ($process.ExitCode -ne 0) { throw "Packaged GUI exited with $($process.ExitCode)." }
       - uses: actions/upload-artifact@v4
         with:
-          name: JinshuDialogue-0.3.1-windows-x64
+          name: JinshuDialogue-0.4.0-windows-x64
           path: |
             release/*.zip
             release/SHA256SUMS

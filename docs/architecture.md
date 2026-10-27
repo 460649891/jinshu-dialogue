@@ -37,4 +37,8 @@
 
 纯启动由 `src/game.py` 校验主程序并使用独立工作线程调用 `Popen([executable], cwd=游戏目录, shell=False)`。组合入口由 `CaptureService(..., launch_game=True)` 使用 Frida 创建暂停进程，依次 attach、加载 agent、resume；失败或取消也会尝试恢复已创建的进程，不终止用户游戏。已运行时只连接现有游戏，退出后等待手动重新启动。
 
+组合入口在 agent 就绪后调用 `src/speed_gear.py`，按相邻目录定位并校验 GearNT 0.46 三个文件的哈希，复用或启动管理进程。`src/gear_agent.js` 调用 SDK 导出的 `AddProcess(HANDLE)`、`SetSpeed(int)`、`GetSpeed()`；x86 使用 `mscdecl`，速度码 10 对应 `2 ** (10 / 10) = 2`。加入前通过打开的 HANDLE 重新核对游戏路径，句柄在 finally 中关闭；已有正确 DLL 时不重复注入。
+
+SDK 采用共享倍率。更改前只读检查其他可枚举进程的模块，发现齿轮 DLL 冲突则保留原倍率；已经是码 10 时不重复写入。设置后从游戏回读 DLL 路径和速度码，而非仅相信管理端成功。第三方原生调用可能无响应，因此使用带请求编号的 `recv/send` 消息桥与宿主有界队列等待；不用无法取消等待的 `exports_sync`。停止、超时和迟到回复分别处理，清理也设取消期限。停止时先断开采集，再保存当前会话中已排队的对白，关闭文件后才报告保存完成。变速失败不会终止对白采集，提示随对白状态持续保留。
+
 PyInstaller 构建为 `onedir`，Qt、Python 和 Frida 随 `_internal` 一起分发，不依赖接收者安装 Python。源码 ZIP 使用允许清单，排除个人路径设置、游戏、诊断、对白记录及开发环境。第三方许可证通过已校验的本地缓存离线收集，来源见 `scripts/licenses/SOURCES.json`。

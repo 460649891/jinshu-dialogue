@@ -9,6 +9,7 @@ import uuid
 from dialogue import DialogueAssembler, DialogueWriter
 from settings import RESOURCE_ROOT, inspect_executable
 from game import running_game_pid
+from speed_gear import enable_gear_for_game
 
 
 class EventSink:
@@ -47,6 +48,9 @@ class CaptureService:
         watcher = None
         device = None
         spawned_pid = None
+        events = None
+        token = None
+        final_error = None
         finished = threading.Event()
         try:
             profile = inspect_executable(self.executable)
@@ -70,7 +74,9 @@ class CaptureService:
             watcher = threading.Thread(target=watch_stop, daemon=True, name='capture-cancel')
             watcher.start()
             code = (RESOURCE_ROOT / 'src' / 'agent.js').read_text(encoding='utf-8')
-            token = None
+            speed_attempted = False
+            speed_message = ''
+            speed_details = {}
             retry_at = 0
             launch_pending = self.launch_game
             on_status('waiting', '正在启动游戏并准备记录…' if launch_pending else '等待游戏启动…', {})
@@ -110,27 +116,46 @@ class CaptureService:
                         continue
                     if message.get('type') == 'detached':
                         session = None
+                        token = None
+                        speed_attempted = False
+                        speed_message = ''
+                        speed_details = {}
                         on_status('waiting', '游戏已退出，等待重新连接…', {})
                         continue
                     if message.get('type') == 'error':
                         raise RuntimeError('监听脚本错误：' + message.get('description', '未知错误'))
                     payload = message.get('payload', {})
                     if payload.get('event') == 'ready':
-                        on_status('connected', '已连接 · 正在等待人物对话', {})
+                        if stop_event.is_set():
+                            continue
+                        if self.launch_game and not speed_attempted:
+                            speed_attempted = True
+                            on_status('waiting', '监听已就绪，正在配置变速齿轮 2 倍速…', {})
+                            try:
+                                result = enable_gear_for_game(
+                                    profile['executable'], pid, session, device, stop_event)
+                            except Exception as error:
+                                if stop_event.is_set():
+                                    continue
+                                warning = str(error) or type(error).__name__
+                                speed_message = ' · 变速未启用：' + warning
+                                speed_details = {'speed_warning':warning}
+                            else:
+                                if stop_event.is_set():
+                                    continue
+                                speed_message = ' · 变速齿轮 2 倍速'
+                                speed_details = {'speed_multiplier':result['multiplier']}
+                        on_status('connected', '已连接 · 正在等待人物对话' + speed_message,
+                                  speed_details)
                     elif payload.get('event') == 'dialogue':
                         sink.accept({**payload, 'session':event_token}, on_dialogue)
                         if sink.writer is not None:
-                            on_status('connected', '正在记录人物对话', {
-                                'text_path':str(sink.writer.text_path), 'json_path':str(sink.writer.json_path)})
-            on_status('stopped', '监听已停止，记录已保存', {})
+                            on_status('connected', '正在记录人物对话' + speed_message, {
+                                'text_path':str(sink.writer.text_path), 'json_path':str(sink.writer.json_path),
+                                **speed_details})
         except Exception as error:
-            if stop_event.is_set():
-                on_status('stopped', '监听已停止，记录已保存', {})
-            else:
-                message = str(error)
-                if type(error).__name__ == 'PermissionDeniedError':
-                    message = '无法连接游戏。请让游戏和工具使用相同权限；游戏以管理员身份启动时，工具也需如此。'
-                on_status('error', message, {})
+            if not stop_event.is_set() or isinstance(error, OSError):
+                final_error = error
         finally:
             finished.set()
             if watcher is not None:
@@ -142,10 +167,37 @@ class CaptureService:
                     with frida.Cancellable():
                         device.resume(spawned_pid)
                 except Exception as error:
-                    on_status('error', '游戏恢复运行失败，请关闭该游戏窗口后重试：' + str(error), {})
+                    final_error = RuntimeError('游戏恢复运行失败，请关闭该游戏窗口后重试：' + str(error))
             if session is not None:
                 try:
                     session.detach()
                 except Exception:
                     pass
-            sink.close()
+            try:
+                # Stop the producer before saving dialogues already captured
+                # while a cancellable native operation was in progress.
+                if stop_event.is_set() and events is not None and token is not None:
+                    while True:
+                        try:
+                            event_token, message = events.get_nowait()
+                        except queue.Empty:
+                            break
+                        payload = message.get('payload', {})
+                        if (event_token == token and message.get('type') == 'send' and
+                                payload.get('event') == 'dialogue'):
+                            sink.accept({**payload, 'session':event_token}, on_dialogue)
+            except Exception as error:
+                final_error = error
+            finally:
+                try:
+                    sink.close()
+                except Exception as error:
+                    if final_error is None:
+                        final_error = error
+        if final_error is not None:
+            message = str(final_error)
+            if type(final_error).__name__ == 'PermissionDeniedError':
+                message = '无法连接游戏。请让游戏和工具使用相同权限；游戏以管理员身份启动时，工具也需如此。'
+            on_status('error', message, {})
+        else:
+            on_status('stopped', '监听已停止，记录已保存', {})

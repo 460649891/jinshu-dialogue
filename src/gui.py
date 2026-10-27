@@ -127,7 +127,7 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(0, lambda: self.list_view.scrollToTop())
             self._update_capture_controls()
         else:
-            message = '选择游戏中的 jshyl5.exe，点击“启动游戏并开始记录”。游戏已运行时也可直接开始记录。'
+            message = '选择 jshyl5.exe，组合启动将自动启用变速齿轮 2 倍速；游戏已运行可点“开始记录”。'
             if self._using_fallback_directory:
                 message += f'\n应用目录不可写，记录保存于 {self.output_directory}'
             self._set_status('stopped', message)
@@ -627,7 +627,7 @@ class MainWindow(QMainWindow):
         self._save_preferences()
         self._capture_launching = launch_game
         self._capture_status_code = 'waiting'
-        self._set_status('waiting', '正在启动游戏并准备记录，请稍候…' if launch_game else
+        self._set_status('waiting', '正在启动游戏并准备记录，监听就绪后会自动启用变速齿轮 2 倍速…' if launch_game else
                          '正在等待游戏。可点击“启动游戏”，运行后会自动连接。')
         self.worker = CaptureThread(filename, self.output_directory, self, launch_game=launch_game)
         self.worker.dialogue.connect(self._enqueue_dialogue)

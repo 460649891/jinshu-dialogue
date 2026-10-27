@@ -7,6 +7,7 @@ from PyInstaller.utils.hooks import collect_dynamic_libs, copy_metadata
 ROOT = Path(SPECPATH).resolve()
 datas = [
     (str(ROOT / 'src' / 'agent.js'), 'src'),
+    (str(ROOT / 'src' / 'gear_agent.js'), 'src'),
     (str(ROOT / 'src' / 'theme.qss'), 'src'),
     (str(ROOT / 'assets'), 'assets'),
     (str(ROOT / 'profiles'), 'profiles'),
