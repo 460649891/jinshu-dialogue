@@ -155,7 +155,12 @@ def enable_gear_for_game(executable, pid, game_session, device, stop_event, time
                 raise GearError('变速齿轮已关联其他程序，未调整共享倍率；请先在齿轮中移除其他程序。')
             if stop_event.is_set():
                 raise GearError('已取消变速设置')
-            manager_script.call('configure', [pid, not before['loaded'], str(executable), other_pids],
+            # GearNT can itself restore a saved game target during startup.
+            current = probe.call('state', [], stop_event, deadline)
+            if current['loaded'] and not _same_path(current['dll_path'], gear_dll):
+                raise GearError('游戏已连接其他目录的变速齿轮，请使用同一目录。')
+            attach = not current['loaded']
+            manager_script.call('configure', [pid, attach, str(executable), other_pids],
                                 stop_event, deadline)
             if stop_event.is_set():
                 raise GearError('已取消变速设置')
@@ -163,7 +168,7 @@ def enable_gear_for_game(executable, pid, game_session, device, stop_event, time
             if (not after['loaded'] or not _same_path(after['dll_path'], gear_dll)
                     or after['speed'] != 10):
                 raise GearError('游戏两倍速校验失败，请检查变速齿轮是否正常运行。')
-            return {'multiplier':2.0, 'manager_pid':manager_pid, 'attached':not before['loaded']}
+            return {'multiplier':2.0, 'manager_pid':manager_pid, 'attached':attach}
     except Exception as error:
         if stop_event.is_set():
             raise GearError('已取消变速设置') from error

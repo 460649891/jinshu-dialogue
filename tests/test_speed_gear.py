@@ -51,6 +51,7 @@ class GearTests(unittest.TestCase):
         self.other_targets = []
         self.manager_ready_after = 1
         self.manager_queries = 0
+        self.manager_auto_attaches_game = False
         owner = self
 
         class Script:
@@ -76,6 +77,8 @@ class GearTests(unittest.TestCase):
                     stop.set()
                 if self.role == 'manager':
                     owner.manager_queries += 1
+                    if owner.manager_auto_attaches_game:
+                        owner.loaded = True
                 return {'loaded':owner.loaded if self.role == 'game' else owner.manager_queries >= owner.manager_ready_after,
                         'dll_path':str(owner.override_path or owner.folder / 'GearNtKe.dll'),
                         'speed':owner.speed, 'other_targets':owner.other_targets}
@@ -122,6 +125,10 @@ class GearTests(unittest.TestCase):
 
     def test_already_attached_game_is_reused_without_double_injection(self):
         self.loaded = True
+        self.assertEqual(2.0, self.apply()['multiplier'])
+
+    def test_manager_automatic_attachment_is_rechecked_before_injection(self):
+        self.manager_auto_attaches_game = True
         self.assertEqual(2.0, self.apply()['multiplier'])
 
     def test_manager_success_is_not_enough_when_game_speed_is_wrong(self):
