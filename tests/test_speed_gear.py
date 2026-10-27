@@ -22,7 +22,8 @@ class Cancellation:
 class GearTests(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
-        self.root = Path(self.directory.name)
+        # Windows runners can return an 8.3 TEMP path; the real adapter resolves it.
+        self.root = Path(self.directory.name).resolve()
         self.exe = self.root / 'game' / 'jshyl5.exe'
         self.exe.parent.mkdir()
         self.exe.write_bytes(b'game-fixture')
